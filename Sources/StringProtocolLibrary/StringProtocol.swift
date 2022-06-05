@@ -5,18 +5,38 @@
 //  Created by Leonardo Dabus on 9/23/21.
 //
 
-import Foundation
+//
+//  StringProtocol.swift
+//
+//
+//  Created by Leonardo Dabus on 9/23/21.
+//
+
+import struct Foundation.Data
+import protocol Foundation.DataProtocol
 
 public extension StringProtocol {
-    subscript(_ offset: Int)                     -> Element     { self[index(startIndex, offsetBy: offset)] }
-    subscript(_ range: Range<Int>)               -> SubSequence { prefix(range.lowerBound+range.count).suffix(range.count) }
-    subscript(_ range: ClosedRange<Int>)         -> SubSequence { prefix(range.lowerBound+range.count).suffix(range.count) }
-    subscript(_ range: PartialRangeThrough<Int>) -> SubSequence { prefix(range.upperBound.advanced(by: 1)) }
-    subscript(_ range: PartialRangeUpTo<Int>)    -> SubSequence { prefix(range.upperBound) }
-    subscript(_ range: PartialRangeFrom<Int>)    -> SubSequence { suffix(Swift.max(0, count-range.lowerBound)) }
-}
+    subscript(_ offset: Int) -> Element {
+        self[index(startIndex, offsetBy: offset)]
+    }
+    subscript(_ range: Range<Int>) -> SubSequence {
+        prefix(range.lowerBound+range.count)
+            .suffix(range.count)
+    }
+    subscript(_ range: ClosedRange<Int>) -> SubSequence {
+        prefix(range.lowerBound+range.count)
+            .suffix(range.count)
+    }
+    subscript(_ range: PartialRangeThrough<Int>) -> SubSequence {
+        prefix(range.upperBound.advanced(by: 1))
+    }
+    subscript(_ range: PartialRangeUpTo<Int>) -> SubSequence {
+        prefix(range.upperBound)
+    }
+    subscript(_ range: PartialRangeFrom<Int>) -> SubSequence {
+        suffix(Swift.max(0, count-range.lowerBound))
+    }
 
-public extension StringProtocol {
     func index<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> Index? {
         range(of: string, options: options)?.lowerBound
     }
@@ -30,18 +50,65 @@ public extension StringProtocol {
         var result: [Range<Index>] = []
         var startIndex = self.startIndex
         while startIndex < endIndex,
-            let range = self[startIndex...]
-                .range(of: string, options: options) {
-                result.append(range)
-                startIndex = range.lowerBound < range.upperBound ? range.upperBound :
-                    index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ?? endIndex
+            let range = self[startIndex...].range(
+                of: string,
+                options: options
+            ) {
+            result.append(range)
+            startIndex = range.lowerBound < range.upperBound ?
+                range.upperBound :
+                index(
+                    range.lowerBound,
+                    offsetBy: 1,
+                    limitedBy: endIndex
+                ) ?? endIndex
         }
         return result
     }
+
+    func distance(of element: Element) -> Int? {
+        firstIndex(of: element)?.distance(in: self)
+    }
+    func distance<S: StringProtocol>(of string: S) -> Int? {
+        range(of: string)?.lowerBound.distance(in: self)
+    }
+
+    var data: Data { .init(utf8) }
+
+    func hexa<D: DataProtocol & RangeReplaceableCollection>() throws -> D {
+        try .init(self)
+    }
+
+    var lines: [SubSequence] {
+        split(whereSeparator: \.isNewline)
+    }
 }
 
-public extension StringProtocol {
-    func distance(of element: Element) -> Int? { firstIndex(of: element)?.distance(in: self) }
-    func distance<S: StringProtocol>(of string: S) -> Int? { range(of: string)?.lowerBound.distance(in: self) }
-}
+extension StringProtocol where Self: RangeReplaceableCollection {
 
+    var digits: Self { filter(\.isDigit) }
+
+    mutating func insert<S: StringProtocol>(
+        separator: S,
+        every n: Int
+    ) {
+        for index in indices
+            .every(n: n)
+            .dropFirst()
+            .reversed() {
+            insert(
+                contentsOf: separator,
+                at: index
+            )
+        }
+    }
+    func inserting<S: StringProtocol>(
+        separator: S,
+        every n: Int
+    ) -> Self {
+        .init(
+            unfoldSubSequences(limitedTo: n)
+            .joined(separator: separator)
+        )
+    }
+}

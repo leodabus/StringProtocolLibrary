@@ -1,3 +1,3 @@
 struct StringProtocolLibrary {
-    var text = "Hello, World!"
+    static let text = "Author: Leonardo Dabus"
 }
