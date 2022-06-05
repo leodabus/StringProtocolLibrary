@@ -6,5 +6,7 @@
 //
 
 public extension LosslessStringConvertible {
-    var string: String { .init(self) }
+    var string: String {
+        .init(self)
+    }
 }
