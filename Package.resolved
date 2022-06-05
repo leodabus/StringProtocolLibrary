@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "DataProtocolLibrary",
+        "repositoryURL": "https://github.com/leodabus/DataProtocolLibrary.git",
+        "state": {
+          "branch": null,
+          "revision": "d41cb463471f44dab4da00eb16440fe026a7a681",
+          "version": "1.0.3"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
